@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
 import re
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 @app.route('/api/snapchat', methods=['GET'])
 def snapchat_scraper():
@@ -21,7 +23,6 @@ def snapchat_scraper():
         "status": "partial"
     }
 
-    # Fetch SVG
     try:
         svg_res = requests.get(result["snapcode_svg_url"], timeout=10)
         svg_res.raise_for_status()
@@ -34,7 +35,6 @@ def snapchat_scraper():
     except Exception as e:
         result["bitmoji_error"] = str(e)
 
-    # Profile Page
     try:
         profile_url = f"https://www.snapchat.com/@{username}"
         prof_res = requests.get(profile_url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
