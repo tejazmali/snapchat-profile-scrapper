@@ -68,3 +68,6 @@ def snapchat_scraper():
         result["profile_error"] = str(e)
 
     return jsonify(result)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080)
