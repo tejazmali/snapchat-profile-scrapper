@@ -1,9 +1,9 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/snapchat.py", "use": "@vercel/python" }
+    { "src": "/snapchat-api/api/snapchat.py", "use": "@vercel/python" }
   ],
   "routes": [
-    { "src": "/api/snapchat", "dest": "api/snapchat.py" }
+    { "src": "/snapchat-api/api/snapchat", "dest": "api/snapchat.py" }
   ]
 }
