@@ -16,28 +16,31 @@ def snapchat_scraper():
     result = {
         "username": username,
         "snapcode_url": f"https://app.snapchat.com/web/deeplink/snapcode?username={username}&type=PNG&bitmoji=enable",
-        "bitmoji_url": None,
+        "bitmoji_base64_url": None,
         "3d_bitmoji_url": None,
         "background_image_url": None,
         "display_name": None,
         "status": "partial"
     }
 
+    # ---------- 1. Snapcode SVG (to extract base64 Bitmoji) ----------
     try:
-        # SVG version may have embedded Bitmoji inside <image> tag
         svg_url = f"https://app.snapchat.com/web/deeplink/snapcode?username={username}&type=SVG&bitmoji=enable"
         svg_res = requests.get(svg_url, timeout=10)
         svg_res.raise_for_status()
+
         soup = BeautifulSoup(svg_res.text, "xml")
 
+        # Detect both href and xlink:href
         image_tag = soup.find("image")
         if image_tag:
             data_uri = image_tag.get("xlink:href") or image_tag.get("href")
             if data_uri and data_uri.startswith("data:image/png;base64,"):
-                result["bitmoji_url"] = data_uri  # Use directly if you want base64
+                result["bitmoji_base64_url"] = data_uri
     except Exception as e:
         result["bitmoji_error"] = str(e)
 
+    # ---------- 2. Profile Page (to extract 3D Bitmoji, background, and display name) ----------
     try:
         profile_url = f"https://www.snapchat.com/@{username}"
         prof_res = requests.get(profile_url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
