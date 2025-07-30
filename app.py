@@ -15,7 +15,7 @@ def snapchat_scraper():
 
     result = {
         "username": username,
-        "snapcode_url": f"https://app.snapchat.com/web/deeplink/snapcode?username={username}&type=PNG&bitmoji=enable",
+        "snapcode_url": f"https://app.snapchat.com/web/deeplink/snapcode?username={username}&type=SVG&bitmoji=enable",
         "bitmoji_base64_url": None,
         "3d_bitmoji_url": None,
         "background_image_url": None,
