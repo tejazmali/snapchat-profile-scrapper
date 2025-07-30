@@ -1,47 +1,33 @@
-# /api/scrape.py
-
-from http.server import BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import requests
-import json
 from bs4 import BeautifulSoup
 
-class handler(BaseHTTPRequestHandler):
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "*")
-        self.end_headers()
+app = Flask(__name__)
+CORS(app)
 
-    def do_GET(self):
-        parsed_url = urlparse(self.path)
-        query_params = parse_qs(parsed_url.query)
-        username = query_params.get("username", [None])[0]
+@app.route('/api/scrape')
+def scrape():
+    username = request.args.get('username', '').strip()
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
 
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.end_headers()
+    try:
+        url = f"https://www.snapchat.com/add/{username}"
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
 
-        if not username:
-            self.wfile.write(json.dumps({"error": "Missing username"}).encode())
-            return
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-        try:
-            res = requests.get(f"https://www.snapchat.com/add/{username}")
-            soup = BeautifulSoup(res.text, 'html.parser')
+        snapcode_img = soup.find("img", {"class": "snapcode"})["src"]
+        bitmoji_img = soup.find("img", {"alt": "Bitmoji avatar"})["src"]
 
-            snapcode = soup.find("img", {"alt": "Snapcode"})["src"]
-            bitmoji = soup.find("img", {"class": lambda x: x and "bitmoji" in x})["src"]
-
-            output = {
-                "username": username,
-                "snapcode": snapcode,
-                "bitmoji": bitmoji
-            }
-
-            self.wfile.write(json.dumps(output).encode())
-
-        except Exception as e:
-            self.wfile.write(json.dumps({"error": str(e)}).encode())
+        return jsonify({
+            "username": username,
+            "snapcode": snapcode_img,
+            "bitmoji": bitmoji_img
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
