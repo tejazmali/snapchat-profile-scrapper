@@ -21,7 +21,7 @@ def snapchat_scraper():
         "status": "partial"
     }
 
-    # Fetch SVG
+    # Fetch Snapcode SVG and extract base64 Bitmoji
     try:
         svg_res = requests.get(result["snapcode_svg_url"], timeout=10)
         svg_res.raise_for_status()
@@ -34,7 +34,7 @@ def snapchat_scraper():
     except Exception as e:
         result["bitmoji_error"] = str(e)
 
-    # Profile Page
+    # Scrape Snapchat public profile page
     try:
         profile_url = f"https://www.snapchat.com/@{username}"
         prof_res = requests.get(profile_url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
